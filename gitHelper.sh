@@ -119,7 +119,7 @@ echo '---------------------------------[end]------------------------------------
 
 
 main (){
-#    clearGittrace
+    #clearGittrace
     setBranch
     setPushBranch
     ACP

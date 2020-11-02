@@ -2,7 +2,7 @@
 
 set -e
 
-cd /var/backups || exit 0
+#cd /var/backups || exit 0
 
 for FILE in passwd group shadow gshadow; do
         test -f /etc/$FILE              || continue

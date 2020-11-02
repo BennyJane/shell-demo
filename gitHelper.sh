@@ -73,7 +73,7 @@ function clearGittrace(){
 
 
 function ACP(){
-is_exit=false
+is_exit=1
 echo '------------------------------------------------------------------------------------'
 
 git add .
@@ -87,7 +87,7 @@ read message
 if [[ ${message} = "q" ]]
 then
     # 通过输入 q, 直接推出当前脚本
-    is_exit=true
+    is_exit=0
     echo "不提交本次代码"
 elif [[ ${message} = "d" ]]
 then
@@ -101,9 +101,9 @@ else
     echo "请输入本次更新信息"
 fi
 
-if [[ !is_exit ]]
+if [[ is_exit -eq 1 ]]
 then
-    echo '------------------------------------------------------------------------------------'
+    echo '-----------------------------------------------------------------------------------'
     echo "是否向远程分支推送本次修改(y|yes|q)"
     read is_push
 
@@ -121,8 +121,11 @@ main (){
     while :
     do
         echo '---------------------------------[主目录]--------------------------------------------'
-        echo "请输入想进行的操作：(cached|acp|p|clear|exit)" ; read category;
+        echo "请输入想进行的操作：(init|acp|p|clear|cached|exit)" ; read category;
         case ${category} in
+        "init")
+            setBranch
+            setPushBranch;;
         "cached"|"rmc")
             clearGittrace;;
         "acp"|"a")
@@ -133,9 +136,18 @@ main (){
             git pull origin ${current_branch};;
         "exit"|"ex")
             exit 1;;
+        "custom")
+            while true :
+            do
+                echo "没有匹配到该命令，进入自由命令模式：(exit)"; read CMD;
+                if [[ ${CMD} = "exit" ]] || [[ ${CMD} = "e" ]]
+                then
+                    break
+                fi
+                echo  `${CMD}`
+            done;;
         *)
-            setBranch
-            setPushBranch;;
+            ACP;;
         esac
 
     done

@@ -101,7 +101,7 @@ else
     echo "请输入本次更新信息"
 fi
 
-if [[ is_exit = false ]]
+if [[ !is_exit ]]
 then
     echo '------------------------------------------------------------------------------------'
     echo "是否向远程分支推送本次修改(y|yes|q)"
@@ -124,6 +124,7 @@ fi
 main (){
     while :
     do
+        echo '---------------------------------[主目录]-----------------------------------------------'
         echo "请输入想进行的操作：(cached|acp|p|clear|exit)" ; read category;
         case ${category} in
         "cached"|"rmc")
@@ -140,6 +141,7 @@ main (){
             setBranch
             setPushBranch;;
         esac
+
     done
 
 }

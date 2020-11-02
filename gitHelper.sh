@@ -69,11 +69,11 @@ function gitCommit () {
 function clearGittrace(){
 	echo "清除本地git文件追踪内容"
 	git rm -r -f --cached .
-
 }
 
 
 function ACP(){
+is_exit=false
 echo '------------------------------------------------------------------------------------'
 
 git add .
@@ -87,7 +87,8 @@ read message
 if [[ ${message} = "q" ]]
 then
     # 通过输入 q, 直接推出当前脚本
-    exit 1
+    is_exit=true
+    echo "不提交本次代码"
 elif [[ ${message} = "d" ]]
 then
     echo "使用默认注释，进行更新"
@@ -100,32 +101,49 @@ else
     echo "请输入本次更新信息"
 fi
 
-echo '------------------------------------------------------------------------------------'
-echo "是否向远程分支推送本次修改(y|yes|q)"
-read is_push
+if [[ is_exit = false ]]
+then
+    echo '------------------------------------------------------------------------------------'
+    echo "是否向远程分支推送本次修改(y|yes|q)"
+    read is_push
 
-case ${is_push} in
-"y" | "yes")
-  git push origin ${current_branch};;
-"q" | "exit" | "e")
- echo "退出,不推送到远程分支"
- exit 1;;
- *)
- echo "退出";;
-esac
-echo '---------------------------------[end]-----------------------------------------------'
-
+    case ${is_push} in
+    "y" | "yes")
+      git push origin ${current_branch};;
+    "q" | "exit" | "e")
+     echo "退出,不推送到远程分支"
+     exit 1;;
+     *)
+     echo "退出";;
+    esac
+    echo '---------------------------------[end]-----------------------------------------------'
+fi
 }
 
 
 main (){
-    while true
+    while :
     do
-        #clearGittrace
-        setBranch
-        setPushBranch
-        ACP
-   done
+        echo "请输入想进行的操作：(cached|acp|p|clear|exit)" ; read category;
+        case ${category} in
+        "cached"|"rmc")
+            clearGittrace;;
+        "acp"|"a")
+            ACP;;
+        "clear"|"cl")
+            clear;;
+        "pull"|"p")
+            git pull origin ${current_branch};;
+        "exit"|"ex")
+            exit 1;;
+        *)
+            setBranch
+            setPushBranch;;
+        esac
+    done
+
 }
 
+setBranch
+setPushBranch
 main

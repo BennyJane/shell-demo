@@ -67,11 +67,33 @@ echo "10^10" | bc   # 计算平方
 
 #### 文件描述符是与 输入与输出流 相相关联的整数
   # 0 stdin 标准输入  1 stdout 标准输出  2 stderr 标准错误输出
-  # 命令执行产生错误信息时，该信息会被输出到 stderr 流。
-  #
+  # 命令执行产生错误信息时，该信息会被输出到 stderr 流; 非错误信息，默认输出到 stdout 流
+  # > >> 默认只输出 标准输出流 的内容，错误信息不会被传递
+  # /dev/stdin /dev/stdout /dev/stderr
+  # > 等效 1> ; >> 等效 1>>
 
 # 将标准输出 到 指定文件
 echo "This is a sample test 1" > temp.txt # 写入(覆盖)：目标文件已存在，会清空后再写入当前内容
 echo "This is a sample test 1" >> temp.txt # 写入(追加): 不清空原有内容
+
+#ls + 执行异常，
+ls + 2> ./error.txt
+ls + >> ./error.txt  # 异常信息没有被处理
+ls + 1> ./correct.txt 2>> ./error.txt # 将标准输出 与 异常输出 分别输出到各自文件中
+ls + 1> ./correct.txt 2> /dev/null  # 异常信息重定向到/dev/null; 不输出，不保存
+ls + 2>&1 ./correct.txt # 合并输出标准输出与异常输出
+
+# stdout 单数据流，只能被使用到一个地方：文件 或 通过管道进入其他程序，无法两者兼得
+# tee： 从stdin读取数据，然后可以将数据重定向到 stdout 或 多个文件中
+  # command | tee FILE1 FILE2 | otherCommand
+  # tee -a FILE 追加信息
+  #  tee - 将输入内容，输出两份
+  # tee 只能处理stdin内容，不能处理stderr异常信息
+#ls -al | tee correct.txt | cut -c 2
+#ls -al | tee -a correct.txt | cut -c 2
+ls -l | tee - # 输出到-文件内
+
+
+
 
 

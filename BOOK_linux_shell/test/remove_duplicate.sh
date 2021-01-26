@@ -19,3 +19,13 @@ ls -lS --time-style=long-iso | awk 'BEGIN {
 
   size=$5; name1=name2;
 }' | sort -u > duplicate_files
+
+cat duplicate_files | xargs -I {} md5sum | \
+sort | uniq -w 32 | awk '{ print $2 }' | \
+sort -u > unique_files
+
+echo Removing...
+comm duplicate_files unique_files -3 | tee /dev/stderr |  xargs rm
+
+echo Removed dbuplicates files successfully
+

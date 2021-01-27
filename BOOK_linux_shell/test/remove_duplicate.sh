@@ -16,7 +16,6 @@ ls -lS --time-style=long-iso | awk 'BEGIN {
       print name1; print name2
     }
   };
-
   size=$5; name1=name2;
 }' | sort -u > duplicate_files
 
@@ -28,4 +27,3 @@ echo Removing...
 comm duplicate_files unique_files -3 | tee /dev/stderr |  xargs rm
 
 echo Removed dbuplicates files successfully
-

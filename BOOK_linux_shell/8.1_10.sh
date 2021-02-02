@@ -38,11 +38,15 @@ ssh-keygen -t rsa
 
 ssh-keygen -t rsa -P "" # 免密码
 
-## 将公钥复制到免密码登录的目标服务器上
-# 在目标服务器上操作
+## 将公钥复制到免密码登录的目标服务器上（在客户端主机上，将id_rsa.pub添加到相应的authorized_keys中，可实现免密码登录自身）
+# 1. 在目标服务器上操作
 scp client@localhost:/home/client/.ssh/id_rsa.pub /home/server
 cat /home/server/id_rsa.pub >> .ssh/authorized_keys # 将公钥添加到文件末尾，允许添加多个公钥
 rm /home/server/id_rsa.pub  # 删除复制过来的源文件
+
+# 2.在客户端主机上使用 ssh-copy-id
+ssh-copy-id target@IP
+
 
 
 ## 检测ssh密钥是否生效
@@ -54,3 +58,10 @@ ssh -l benny 119.56.23.1
 sudo apt-get upgrade
 sudo apt-get install openssh-server # 服务端安装
 sudo apt-get install openssh-client # 客户端安装
+
+
+## 配置/etc/hosts中 主机名与IP地址，可以直接使用 ssh [主机名] 登录，不需要输入IP
+
+# https://segmentfault.com/a/1190000015362485
+
+

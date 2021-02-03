@@ -9,6 +9,9 @@ while read line; do
   let statarray["$ftype"]++
 done < <(find $path -type f -print)
 
+echo "${statarray[@]}"
+echo "${!statarray[@]}"
+
 for ftype in "${!statarray[@]}";
 do
   echo $ftype : ${statarray["$ftype"]}

@@ -105,8 +105,19 @@ tree ~/benny
 # 生成HTML输出
 tree PATH -H http://localhost -o out.html
 
+##################################################### 【3.9 文件类型统计信息 】  #############################
+#### 使用图像化的树状层次结构描述 目录与文件系统
+path=/var
 
+declare -A statarray
 
+while read line;
+do
+  ftype=`file -b "$line" | cut -d, -f1`
+  let statarray["$ftype"]++;
+done <(find $path -type f -print)
+
+for
 
 
 

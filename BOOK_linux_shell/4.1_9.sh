@@ -41,7 +41,27 @@ grep "pattern" . -R -n  # 递归搜索多个文件
 echo hello world | grep -i "HELLO"  # 忽略大小写
 grep -e "pattern1" -e "pattern1"  # 指定多个匹配模式，任意匹配上即可，就会输出
 grep -f pattern_filesource file # 从文件中读取匹配模式，一个模式占一行
-grep "main()" . -r --inclue *.{c, cpp}  # --include 递归搜索所有.c .cpp文件
+grep "main()" . -r --inclue *.{c, cpp}  # --include 递归搜索所有.c .cpp文件. 限定内容
+  # some{string1, string2} 会被扩展为 somestring1. somestring2
+grep "main()" . -r --exclude "README" # 排除指定文件
+grep "main()" . -r --exclude-dir "README" # 排除指定目录
+grep "main()" . -r --exclude-from file # 从文件中读取排除文件列表
 
 
+##################################################### 【4.4 cut 】  ####################################################
+# -f 自定义字段
+cut -f filed_list filename
+cut -f 2,3 filename
+cut -f1 filename
+cut -f2,4 filename
+cut -f3 --complement filename
 
+cut -f2 -d ";" filename
+
+#  -c -b
+cut -c 2-5 filename
+cut -c -2 filename
+cut filename -c 1-3,6-9 --output-delimiter ","
+
+##################################################### 【4.5 sed 】  ####################################################
+#### 字符串替换

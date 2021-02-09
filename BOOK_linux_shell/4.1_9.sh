@@ -251,7 +251,7 @@ seq 100 | awk 'NR==4, NR==6'
 awk '/start_pattern/, /end_pattern/' filename # 正则表达式
 awk '/pa.*2/, /end/' file
 
-##################################################### 【4.12 以逆序形式打印行 】  #############################
+##################################################### 【4.12 以逆序形式打印行 】  ####################################
 #### tac
   # tac file1 file2 ...
   # tac 默认使用 \n 作为行分隔符
@@ -262,3 +262,21 @@ echo "1,2" | tac -s,
 seq 5 | \
   awk '{ lifo[NR]=$0}\
    END { for(lno=NR;lno>-1;lno--){ print lifo[lno]}}'
+
+##################################################### 【4.15 对目录中所有文件进行文本替换 】  ###########################
+#### 替换指定类型文件中 特定内容
+find . -namem *.cpp -print0 | xargs -I{} -0 sed -i 's/Copyright/Copyright/g' {}
+  # -print0 使用\0作为分隔符号，避免文件名中的空格所带来的麻烦
+find . -name *.cpp -exec sed -i sed -i 's/Copyright/Copyright/g' \{\} \;  # 每个文件都会调用一次sed
+find . -name *.cpp -exec sed -i sed -i 's/Copyright/Copyright/g' \{\} \+  # 将多个文件一次性传给sed
+
+##################################################### 【4.16 文本切片与参数操作 】  ##################################
+#### 替换|切片
+  # ${var/match_string/replace_string}
+  # ${string:start_position:length} 指明起始位置，长度（包含起始索引）; 字符串索引从0开始； 从后往前计数，索引从-1开始
+var="This is a line of text."
+echo ${var/line/PERLACED} # 将line替换为PERLACED
+echo ${var:4:8}
+echo ${var:(-1)}
+echo ${var:(-2):2}
+

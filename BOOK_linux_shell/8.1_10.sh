@@ -71,7 +71,22 @@ traceroute destinationIP
 mtr destinationIP # 实时刷新数据
 
 ##################################################### 【8.4 列出网络中所有的活动主机】  ####################################
-####
+#### 参考 ping.sh 文件
+
+
+##################################################### 【8.6 使用SSH在远程主机上执行命令】  #################################
+#### ssh username@remote_host
+ssh root@localhost -p 422 # 指定ssh的端口，默认为22
+ssh root@remote_ip 'whoami' # 直接跟执行的命令
+ssh root@remote_ip 'echo user; ${whoami}; echo OS: ${uname}'  # 指定多个命令
+res=$(ssh root@remote_ip uptime | awk '{ print $3 }') # 使用（）子shell，获取远程主机的运行时间(uptime)
+ssh -c root@remote_ip command  # 对传输数据进行压缩传输
+echo "text" | ssh root@remote_ip 'echo' # 接收 stdin输入
+ssh root@remote_ip 'echo' < file  # 从文件中读取输入
+
+
+##################################################### 【8.8 通过网络传输文件】  #################################
+#### FTP SFTP RSYNC SCP传输文件
 
 
 ##################################################### 【8.10 实现SSH的无密码自动登录】  ###################################

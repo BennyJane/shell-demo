@@ -87,6 +87,54 @@ ssh root@remote_ip 'echo' < file  # 从文件中读取输入
 
 ##################################################### 【8.8 通过网络传输文件】  #################################
 #### FTP SFTP RSYNC SCP传输文件
+## FTP(File Transfer Protocol), 该服务默认运行在端口21上，远程主机需要安装并运行FTP服务. 可以使用ftp 或 lftp
+lftp username@ftphost # 连接FTP服务器传输文件,进入交互界面
+cd dirname  # 更换远程服务器主机目录
+lcd dirname # 更改本地主机目录
+mkdir path  # 在远程主机上创建目录
+ls  # 列出远程主机当前目录下文件
+get filename  # 将文件下载到本地主机的当前目录中
+put filename  # 将本地文件上传到远程服务器
+quit  # 退出lftp会话
+
+## FTP
+HOST='example.com'
+USER='foo'
+PASSWD='password'
+lftp -u ${USER}:${PASSWD} ${HOST} <<EOF
+
+binary  # 将文件模式设置为二进制
+cd /home/foo  # 切换远程主机目录
+put testfile.jpg  # 将文件上传到远程主机
+
+quit
+EOF
+
+## SFTP(Secure FTP, 安全FTP) 运行在SSH连接之上并模拟FTP接口的文件传输系统，不需要远端运行FTP服务器，但必须有SSH服务器
+sftp user@domainname  # 启动交互,quit退出，类似lftp ftp
+sftp -oPart=422 user@domainname # 指定端口（默认端口22）
+
+## SCP(Secure Copy Program，安全复制程序) 文件通过SSH加密通道进行传输
+scp filename user@remote_host:/home/path  # 将本地文件复制到远程主机
+scp user@remote_host:/home/path filename  # 将远程主机文件复制到本地
+scp -oPart=422 user@remote_host:/home/path filename  # 指定端口
+scp -r user@remote_host:/home/path /home/path  # 递归复制整个目录
+scp -p user@remote_host:/home/path /home/path  # -p 保留文件的权限与模式
+
+##################################################### 【8.9 在本地挂载点上挂载远程驱动器】  #################################
+#### sshfs 利用SSH实现在本地挂载点上挂载远程文件系统
+# sshfs需要安装
+sshfs -o allow_other user@remote_host:/home/path /mnt/mountpoint  # 将远程文件系统中/home/path挂载到本地/mnt/mountpoint
+umount /mnt/mountpoint  # 卸载挂载
+
+#### 分析网络流量与端口
+# 列出本机以打开的网络连接
+lsof -i
+# 列出本机当前的开放端口
+lsof -i | grep ":[0-9a-z] +->" -o | grep "[0-9a-z] +" -o | sort | uniq
+# 查看开放端口与服务
+netstat -tnp  # 列出开放端口与服务
+
 
 
 ##################################################### 【8.10 实现SSH的无密码自动登录】  ###################################

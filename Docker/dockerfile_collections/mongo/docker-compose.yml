@@ -4,7 +4,7 @@ services:
   mongo-db:
     container_name: mongo-db
     build:
-      context: .
+      context: ""
       args:
         - MONGO_VER=latest
     ports:

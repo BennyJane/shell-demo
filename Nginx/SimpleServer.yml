@@ -1,0 +1,96 @@
+## Nginx
+
+```
+server {
+    listen       8080;
+    server_name  pipeline.img.tools.huawei.com;
+
+        root   /data01/pipelineUI;
+
+        location / {
+                gzip_static on;
+                root   /data01/pipelineUI;
+        index  index.html index.html;
+                if (-f $request_filename) {
+                  add_header Cache-Control "public max-age=31536000";
+                  rewrite ^ $uri break;
+                }
+                if (!-f $request_filename) {
+                  add_header Cache-Control "no-cache, must-revalidate";
+                  rewrite ^ /index.html break;
+                }
+    }
+        # gitbook(帮助文档部署)
+        location ^~ /gitbook {
+           gzip_static on;
+           alias /data01/helpDoc;
+           index index.html index.htm;
+           try_files $uri $uri/ /index.html;
+    }
+        # 快速上手部署
+        location ^~ /quickStart {
+           gzip_static on;
+           alias /usr/share/nginx/Docs/quickStart;
+           index index.html index.htm;
+           try_files $uri $uri/ /index.html;
+        }
+        # sso单点登录(统一登录入口)
+    location /ssoproxy/ {
+      proxy_pass https://sso.tools.huawei.com/ssoproxy/;
+    }
+        # 看板 -- 看板服务
+        location /emui-kanban-service/ {
+      proxy_pass http://ctsp.rnd.huawei.com:18662;
+        }
+        # 数据中心 -- 日志服务
+        location ~ ^/logprocsrv/((v\d+)|(v\d+\.\d+))/ {
+          proxy_pass https://pipeline-logprocsvr.img.tools.huawei.com;
+        }
+        # 任务 -- DTS导单服务
+        location ~ /build-service-dts/ {
+          add_header X-Location "websocket_pipeline_task";
+          add_header X-Location "websocket_pipeline_task";
+          proxy_pass http://10.248.87.41:8077;
+        }
+        # 构建核心服务
+        location ~ /build-service-core/ {
+      proxy_pass http://ctsp.rnd.huawei.com:18662;
+    }
+        # 未知
+        location ^~ /cd-cloud-pipeline/v2/pipelines/viewjobs/info {
+          proxy_pass https://api.beta.tools.huawei.com/api/cd-cloud-pipeline/v2/pipelines/viewjobs/info;
+
+        }
+        # iam
+        location /cd-iam/ {
+          proxy_pass https://api.beta.tools.huawei.com;
+        }
+        # UniSCM
+        location /UniSCM/{
+          proxy_pass http://b.p4-basic-services.inhuawei.com:9004;
+        }
+        location /rest/ {
+          add_header X-Location "websocket_pipeline_rest";
+          proxy_pass http://10.93.240.41:80;
+        }
+        # 应用层流水线服务
+        location ~ /PipelineSvr/ {
+      proxy_pass http://pipeline-pipelinesvr.img.tools.huawei.com;
+    }
+        location ~ ^/PluginMarketSvr/((v\d+)|(v\d+\.\d+))/ {
+      proxy_pass http://pipeline-pluginmarketsvr.img.tools.huawei.com;
+    }
+        location ~ ^/ExePlanSvr/((v\d+)|(v\d+\.\d+))/ {
+      proxy_pass http://pipeline-exeplansvr.img.tools.huawei.com;
+    }
+        location ~ ^/PipelineStatusSvr/((v\d+)|(v\d+\.\d+))/pipeline/list/info {
+      proxy_pass http://pipeline-pipelinestatussvr.img.tools.huawei.com;
+    }
+        location ~ ^/PluginProxySvr/((v\d+)|(v\d+\.\d+))/ {
+      proxy_pass http://pipeline-pluginproxysvr.img.tools.huawei.com;
+    }
+        location = /50x.html {
+        root   html;
+    }
+}
+```

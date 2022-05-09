@@ -15,12 +15,15 @@ print(type(type(X)))            --> string
 -- nil 表示没有任何有效值，只有一个值 nil
 print(empty)
 
+--[[ ###########################################################################
+nil 用法
+--]]
 -- 遍历表，使用nil删除全局变量、表中变量
 tab1 = { key1 = "val1", key2 = "val2", "val3" }
 for k, v in pairs(tab1) do
     print(k .. " - " .. v)
 end
-
+-- 删除key1
 tab1.key1 = nil
 for k, v in pairs(tab1) do
     print(k .. " - " .. v)

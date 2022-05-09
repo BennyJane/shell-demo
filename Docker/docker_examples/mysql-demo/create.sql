@@ -22,5 +22,5 @@ CREATE TABLE `user` (
 -- 插入数据
 INSERT INTO `user` (`id`, `created_at`, `last_modified`, `email`, `first_name`, `last_name`, `username`)
 VALUES
-  (0,1490257904,1490257904,'john.doe@Example.com','John','Doe','user');
+  (0,1490257904,1490257904,'john.doe@Note.com','John','Doe','user');
 

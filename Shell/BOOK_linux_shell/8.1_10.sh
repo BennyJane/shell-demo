@@ -98,7 +98,7 @@ put filename  # 将本地文件上传到远程服务器
 quit  # 退出lftp会话
 
 ## FTP
-HOST='Example.com'
+HOST='Note.com'
 USER='foo'
 PASSWD='password'
 lftp -u ${USER}:${PASSWD} ${HOST} <<EOF

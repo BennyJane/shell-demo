@@ -1,0 +1,247 @@
+## nginx
+user root;
+worker_processes auto;
+#pcre_jit on;
+error_log /var/log/nginx/error.log error;
+
+events {
+    worker_connections 1024;
+}
+
+http {
+    log_format main '$hostname - $remote_addr - $remote_user [$time_local] '
+                    '"$http_user_agent" "$request" "$status" "$http_referer" "$http_x_forwarded_for" '
+                    '[request_total_time]="$request_time" '
+                    '[pipe]="$pipe" '
+                    '[upstream_addr]="$upstream_addr" '
+                    '[upstream_status]="$upstream_status" '
+                    '[upstream_http_content_encoding]="$upstream_http_content_encoding" '
+                    '[upstream_http_content_length]="$upstream_http_content_length" '
+                    '[body_bytes_sent]="$body_bytes_sent" '
+                    '[upstream_response_time]="$upstream_response_time" '
+                    '[upstream_header_time]="$upstream_header_time"';
+
+    include mime.types;
+    default_type application/octet-stream;
+    server_tokens on;
+    underscores_in_headers on;
+
+    sendfile on;
+    tcp_nodelay on;
+
+    client_max_body_size 10m;
+
+    keepalive_timeout 65;
+
+    gzip on;
+    gzip_types application/json;
+    gzip_min_length 10240;
+
+    access_log /var/log/nginx/access.log main;
+
+    upstream websocket_pipeline_status_list {
+        server 10.247.9.110:8443 weight=1 max_fails=2 fail_timeout=2;
+        keepalive 32;
+    }
+  
+    upstream websocket_pipeline_kanban {
+        #server 10.254.223.251:18661 weight=1 max_fails=2 fail_timeout=2;
+        server ctsp.rnd.huawei.com:18662 weight=1 max_fails=2 fail_timeout=2;
+        keepalive 32;
+    }
+    
+    upstream websocket_pipeline_task {
+        #server 10.248.87.41:8099 weight=1 max_fails=2 fail_timeout=2;
+        server 10.248.87.41:8077 weight=1 max_fails=2 fail_timeout=2;
+        #server ctsp.rnd.huawei.com:18662 weight=1 max_fails=2 fail_timeout=2;
+        keepalive 32;
+    }
+    
+    upstream websocket_build-service-core {
+        #server http://ctsp.rnd.huawei.com:18662 weight=1 max_fails=2 fail_timeout=2;
+        server ctsp.rnd.huawei.com:18662 weight=1 max_fails=2 fail_timeout=2;
+        keepalive 32;
+    }
+
+    server {
+        listen 80;
+        return 301 https://$host$request_uri;
+    }
+
+    server {
+        #listen 80;
+        listen 443 ssl;
+        server_name b.pipeline.tools.huawei.com;
+        ssl_certificate /usr/local/nginx/ssl/cert.crt;
+        ssl_certificate_key /usr/local/nginx/ssl/cert.rsa;
+        ssl_session_timeout 5m; ssl_protocols SSLv2 SSLv3 TLSv1;
+        ssl_ciphers ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP;
+        ssl_prefer_server_ciphers on;
+
+        location / {
+            gzip_static on;
+            root /usr/share/nginx/PipelineUI;
+            index index.html index.htm;
+            if (-f $request_filename) {
+                add_header Cache-Control "public max-age=31536000";
+                rewrite ^ $uri break;
+            }
+            if (!-f $request_filename) {
+                add_header Cache-Control "no-cache, must-revalidate";
+                 rewrite ^ /index.html break;
+            }
+            #try_files $uri /index.html;
+        }
+        
+              location ^~ /gitbook {
+                gzip_static on;
+                alias /usr/share/nginx/helpDoc/helpDoc;
+                index index.html index.htm ;
+                try_files $uri $uri/ /index.html;
+            }
+          location ^~ /quickStart {
+                gzip_static on;
+                alias /usr/share/nginx/quickStart;
+                index index.html index.htm ;
+                try_files $uri $uri/ /index.html;
+            }
+
+        location = /50x.html {
+
+            root html;
+        }
+
+        location /ssoproxy/ {
+            access_log /var/log/nginx/sso_access.log main;
+            error_log  /var/log/nginx/sso_error.log error;
+            proxy_pass https://sso.tools.huawei.com:443/ssoproxy/;
+        }
+
+        location ^~ /ecs-service/v2/getBuildEnv {
+            access_log /var/log/nginx/ecs_service_access.log main;
+            error_log  /var/log/nginx/ecs_service_error.log error;
+            proxy_pass http://10.187.241.184:30030/ecs-service/v2/getBuildEnv;
+            proxy_set_header Host $host:$server_port;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+
+            # access_log /var/log/nginx/ecs_service.log main;
+            #             # error_log  /var/log/nginx/ecs_service.log error;
+            #                         # proxy_pass http://ecs_service;
+            #
+            #                                 
+        }
+        
+        location ^~ /cd-cloud-pipeline/v2/pipelines/viewjobs/info {
+            access_log /var/log/nginx/ecs_service_access.log main;
+            error_log  /var/log/nginx/ecs_service_error.log error;
+            proxy_pass https://api.beta.tools.huawei.com/api/cd-cloud-pipeline/v2/pipelines/viewjobs/info;
+            
+      
+        }        
+        location ~ ^/logprocsrv/((v\d+)|(v\d+\.\d+))/ {
+            access_log /var/log/nginx/logprocsrv_access.log main;
+            error_log  /var/log/nginx/logprocsrv_error.log error;
+            proxy_pass https://pipeline-logprocsvr.beta.tools.huawei.com;
+        }
+
+        location ~ ^/PluginProxySvr/((v\d+)|(v\d+\.\d+))/ {
+            access_log /var/log/nginx/PluginProxySvr_access.log main;
+            error_log  /var/log/nginx/PluginProxySvr_error.log error;
+            proxy_pass https://pipeline-pluginproxysvr.beta.tools.huawei.com;
+        }
+
+        location /cd-iam/ {
+            access_log /var/log/nginx/iam_access.log main;
+            error_log  /var/log/nginx/iam_error.log error;
+            proxy_pass https://api.beta.tools.huawei.com;
+        }
+
+        location ~ ^/PipelineStatusSvr/((v\d+)|(v\d+\.\d+))/pipeline/list/info {
+            access_log /var/log/nginx/websocket_pipeline_status_list_access.log main;
+            error_log  /var/log/nginx/websocket_pipeline_status_list_error.log error;
+            add_header X-Location "websocket_pipeline_status_list";
+            proxy_pass https://websocket_pipeline_status_list;
+            proxy_set_header Host $host:$server_port;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+        }
+
+        location ~ /PipelineSvr/ {
+            access_log /var/log/nginx/websocket_pipeline_status_access.log main;
+            error_log  /var/log/nginx/websocket_pipeline_status_error.log error;
+            add_header X-Location "websocket_pipeline_status";
+            proxy_pass https://websocket_pipeline_status;
+            proxy_set_header Host $host:$server_port;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+        }
+
+        location ~ ^/PluginMarketSvr/((v\d+)|(v\d+\.\d+))/ {
+            access_log /var/log/nginx/plugin_market_svr_access.log main;
+            error_log  /var/log/nginx/plugin_market_svr_error.log error;
+            add_header X-Location "plugin_market_svr";
+            proxy_pass https://plugin_market_svr;
+            proxy_set_header Host $host:$server_port;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
+
+        
+      location ~ /build-service-dts/ {
+            access_log /var/log/nginx/websocket_pipeline_task_access.log main;
+            error_log  /var/log/nginx/websocket_pipeline_task_error.log error;
+            add_header X-Location "websocket_pipeline_task";
+            proxy_pass http://websocket_pipeline_task;
+            proxy_set_header Host $host:$server_port;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+        }
+
+        error_page 500 502 503 504  /50x.html;
+    }
+
+
+    server {
+        listen 8443 ssl;
+        server_name b.pipeline.tools.huawei.com;
+        ssl_certificate /usr/local/nginx/ssl/cert.crt;
+        ssl_certificate_key /usr/local/nginx/ssl/cert.rsa;
+        ssl_session_timeout 5m; ssl_protocols SSLv2 SSLv3 TLSv1;
+        ssl_ciphers ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP;
+        ssl_prefer_server_ciphers on;
+
+        location / {
+            gzip_static on;
+            root /usr/share/nginx/helpDoc/helpDoc;
+            index index.html index.htm;
+            try_files $uri /index.html;
+            if (-f $request_filename) {
+                add_header Cache-Control "public max-age=31536000";
+                rewrite ^ $uri break;
+            }
+            if (!-f $request_filename) {
+                add_header Cache-Control "no-cache, must-revalidate";
+                rewrite ^ /index.html break;
+            }
+        }
+
+        location = /50x.html {
+            root html;
+        }
+
+        error_page 500 502 503 504  /50x.html;
+    }
+}

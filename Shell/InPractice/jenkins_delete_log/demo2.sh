@@ -1,32 +1,62 @@
 #!/bin/bash
+#### Target: 定时清空tomcat下日志文件
 
-##################################################### 【删除jenkins所有构建历史】  ########################################
-targetPath="/var/lib/jenkins/jobs/"
-cd $targetPath
+# -x 代码检测
+set -e
 
-for dir in ./*
-do
-  cd $targetPath
-  cd  "$dir"  #  "$dir" 加双引号 防止路径中有空格导致失效
-  cd builds
-  echo "$pwd"
-  rm rf * # 删除当前目录下所有内容
-done
+#### 输入参数
+percent=$1  # 磁盘预警数值,需要根据服务器磁盘大小调整输入值
+tomcatPath=$2  # 服务器tomcat的路径；路径末尾不包含/
 
-##################################################### 【删除jenkins日志】  ########################################
-# https://www.cnblogs.com/chenpingzhao/p/10020028.html
-#而且我们将已经定位到的文件删除掉，仍然不能释放空间，经过查看可以深层次发现其中的问题。
 
-#在Linux或者Unix系统中，通过rm或者文件管理器删除文件将会从文件系统的文件夹结构上解除链接(unlink).
-# 然而假设文件是被打开的（有一个进程正在使用），那么进程将仍然能够读取该文件，磁盘空间也一直被占用。
-# 而我删除的是jenkins的日志文件，如果jenkins服务没有停止，此时删除该文件并不会起到什么作用。
-# 因为删除的时候文件正在被使用，当linux打开一个文件的时候,
-# Linux内核会为每个进程在/proc/ 『/proc/nnnn/fd/文件夹（nnnn为pid）』建立一个以其pid为名的文件夹用来保存进程的相关信息，
-# 而其子文件夹fd保存的是该进程打开的全部文件的fd（fd：file descriptor）。
+#### 整个脚本中计算文件大小的单位都使用K
 
-# 查看文件是否已经被删除 https://segmentfault.com/a/1190000017838653
-lsof | grep deleted
+#### 常量
+currentDate=$(date +"%Y-%m-%d %H:%M:%S")  # 脚本执行时间
+diskPath="/mnt/disk/"
 
-# 重新启动jenkins
-sudo service jenkins stop
-sudo serivce jenkins start
+# 服务器/mnt/disk挂载磁盘空间大小
+diskSize=$(df -h --block-size=K ${diskPath} | tail -n 1 | awk '{print $2}' | tr -d "K")
+# 预留给日志文件的上限
+fileSizeLimit=$[diskSize*percent/100]
+# 保留日志文件的大小，一般保留预留空间的一半
+reserveFileSize=$[fileSizeLimit/2]
+
+# tomcat日志目录
+tomcatLogPath="${tomcatPath}/logs"
+# 当前日志文件总大小
+tomcatLogFileSize=$(du -s --block-size=K ${tomcatLogPath} | awk '{print $1}' | tr -d "K")
+echo "Disk Size:         " $diskSize
+echo "File Size Limit:   " $fileSizeLimit
+echo "Reserve File Size: " $reserveFileSize
+echo "Tomcat Log Size:   " $tomcatLogFileSize
+
+#### 功能模块1：https://code.huawei.com/cbg_ci/VersionBuild/issues/2843
+deleteLog(){
+  cd $tomcatLogPath
+
+  # 需要删除的文件大小
+  needDeleteFileSize=$[tomcatLogFileSize-reserveFileSize]
+  for file in `ls -tr --block-size=K`
+  do
+    filePath=$tomcatLogPath/$file
+    fileSize=$(du --block-size=K ${filePath} | awk '{print $1}' | tr -d "K")
+    echo "[Delete Tomcat Log]: " $filePath "; size: " $fileSize
+
+    rm $filePath
+    # 减去已删除的文件大小
+    needDeleteFileSize=$[needDeleteFileSize-fileSize]
+    if [ $needDeleteFileSize -le 0 ];then
+      break
+    fi
+  done
+}
+
+
+echo "[输入参数]: ${percent} ${tomcatPath}"
+echo "****************************************【begin：${currentDate}】*********************************************"
+if [ ${tomcatLogFileSize} -ge ${fileSizeLimit} ]; then
+  # 业务逻辑
+  deleteLog
+fi
+echo "****************************************【end：${currentDate}】***********************************************"

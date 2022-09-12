@@ -132,7 +132,7 @@ class _Group2(QGroupBox):
 class _TableModel(QAbstractTableModel):
     def __init__(self) -> None:
         super().__init__()
-        self._data = [[i * 10 + j for j in range(4)] for i in range(5)]
+        self._data = [["<p style='color:red'>{}</p>".format(i * 10 + j) for j in range(4)] for i in range(5)]
 
     def data(self, index: QModelIndex, role: int) -> Any:
         if role == Qt.ItemDataRole.DisplayRole:
@@ -190,12 +190,14 @@ class _Group3(QGroupBox):
         tab_table.setSortingEnabled(True)
 
         tab_list.addItems([f"Item {i + 1}" for i in range(30)])
+        tab_list.addItems(["<td style='color: red'>sdfdsf</td>"])
         tab_list.setAlternatingRowColors(True)
 
         tab_tree.setColumnCount(2)
         for i in range(5):
             item = QTreeWidgetItem([f"Item {i + 1}" for _ in range(2)])
             for j in range(2):
+                # item.addChild(QTextEdit([f"Child Item {i + 1}_{j + 1}" for _ in range(2)]))
                 item.addChild(QTreeWidgetItem([f"Child Item {i + 1}_{j + 1}" for _ in range(2)]))
             tab_tree.insertTopLevelItem(i, item)
 

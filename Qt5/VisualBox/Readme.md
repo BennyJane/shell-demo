@@ -19,3 +19,13 @@ pyinstaller -F --onefile --add-data=".\widget_gallery\svg\*.svg;.\widget_gallery
 pyinstaller main.spec
 ```
 
+### TODO
+
+- [ ] 解压zip文件
+- [ ] 通过拖动添加文件目录 
+- [ ] 支持多文件、多条件搜索
+- [ ] 笔记: 标注，独立显示；导出为log、保存为截图
+- [ ] 大文件搜索：文件拆分
+- [ ]
+
+- [] 更换主题颜色：替换所有SVG中颜色

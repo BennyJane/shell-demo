@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<style type="text/css">
+			table{
+				border-collapse: collapse;/*让靠在一起的单元格只显示一个边框，边框不进行叠加*/
+			}
+
+			table tr th{
+				border: solid 1px #ccc;
+				height: 30px;
+				width: 300px;
+				background-color: #eee;
+			}
+            table tr th:first-child {
+                width: 50px;
+            }
+
+			table tr td{
+				border: solid 1px #ccc;
+				height: 30px;
+				text-align: center;
+			}
+
+			table tr:hover
+			{
+				background-color: rgba(2, 2, 2, 0.11);/*hover:鼠标移上去就会变成红色*/
+			}
+		</style>
+	</head>
+	<body>
+	<table border="0" cellspacing="0" cellpadding="0">
+		<tr>
+            <th>行号</th><th>日志内容</th>
+        </tr>
+        <!--<content>-->
+		<tr><td>2005</td><td>嘎嘎</td>
+        </tr>
+	</table>
+	</body>
+</html>
+

@@ -14,6 +14,7 @@ if __name__ == "__main__":
         app.setAttribute(Qt.ApplicationAttribute.AA_UseHighDpiPixmaps)  # type: ignore
     win = WidgetGallery()
     win.menuBar().setNativeMenuBar(False)
+    win.setMinimumWidth(1200)
     # 引入默认主题
     app.setStyleSheet(load_stylesheet(THEME))
     win.show()

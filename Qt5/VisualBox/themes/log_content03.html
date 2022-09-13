@@ -1,0 +1,31 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>无标题文档</title>
+</head>
+<body>
+<table border="1" width="71%" id="tableA" >
+  <tr>
+    <td width="212" height="52" οnclick="selectPageText(this)">单击我选中文本</td>
+    <td width="179" >测试</td>
+    <td width="213">测试</td>
+  </tr>
+</table>
+</body>
+</html>
+<script src="../widget_gallery/jquery.min.js" type="text/javascript">
+
+</script>
+<script type="text/javascript" language="javascript">
+//选中某元素文本(只能是页面当中的文本，元素内的文本不会被选中)
+function selectPageText(selectElement)
+{
+	//声明一个文本范围
+	var rng=document.body.createTextRange();
+	//移动到某元素的文本
+	rng.moveToElementText(selectElement);
+	//选中
+	rng.select();
+}
+</script>

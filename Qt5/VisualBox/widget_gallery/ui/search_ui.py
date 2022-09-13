@@ -5,7 +5,8 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QCursor
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtWidgets import QWidget, QDockWidget, QTextEdit, QMainWindow, QVBoxLayout, QTabWidget, QTextBrowser, QMenu, \
-    QAction
+    QAction, QTableWidget
+from PyQt5.uic.properties import QtCore
 
 
 class SearchUI:
@@ -18,6 +19,7 @@ class SearchUI:
     def __init__(self) -> None:
         self.table = None
         self.content = None
+        self.tab_list = None
 
     def setup_ui(self, win: QWidget) -> None:
         """Set up ui."""
@@ -28,7 +30,11 @@ class SearchUI:
 
         # Setup widgets
         left_dock.setWidget(QTextEdit("This is the left widget."))
-        table = QTabWidget()
+        # left_dock.setAllowedAreas(Qt.NoDockWidgetArea)
+        left_dock.setFeatures(QDockWidget.NoDockWidgetFeatures)
+        left_dock.setFeatures(QDockWidget.DockWidgetClosable)
+
+        table = QTableWidget()
         right_dock.setWidget(table)
         bottom_dock.setWidget(QTextEdit("This is the bottom widget."))
         for dock in (left_dock, right_dock, bottom_dock):
@@ -40,7 +46,7 @@ class SearchUI:
             )
 
         # Layout
-        main_win = QMainWindow()
+        tab_list = QTabWidget()
         html = self.reload_html()
         row_html = "<tr><td>{}</td><td>{}</td>"
         for i in range(100):
@@ -53,7 +59,17 @@ class SearchUI:
         self.create_right_menu(content)
 
         self.content = content
-        main_win.setCentralWidget(content)
+
+        tab_list.addTab(self.content, "filename1")
+        tab_list.addTab(self.content, "filename2")
+        tab_list.addTab(self.content, "filename3")
+        tab_list.setTabsClosable(True)
+        tab_list.setMovable(True)
+
+        self.tab_list = tab_list
+        main_win = QMainWindow()
+        # main_win.setCentralWidget(content)
+        main_win.setCentralWidget(self.tab_list)
         main_win.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, left_dock)
         main_win.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, right_dock)
         main_win.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, bottom_dock)
@@ -88,6 +104,9 @@ class SearchUI:
 
     def copy(self, widget):
         print(self.content.selectedText())
+        row_log = self.content.selectedText().strip()
+        if row_log == "" or len(row_log) == 0:
+            pass
         print("copy")
 
     def noting(self, widget):

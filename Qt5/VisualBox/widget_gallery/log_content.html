@@ -30,7 +30,6 @@
             border: solid 0px #ccc;
             text-align: left;
             padding: 3px 5px 3px 5px;
-
         }
 
         table tr:hover {
@@ -45,41 +44,111 @@
         <th>content</th>
     </tr>
     <!--<content>-->
-    <tr>
+    <tr contenteditable="false">
         <td>1</td>
-        <td>嘎嘎</td>
+        <td id="file-1">嘎嘎</td>
     </tr>
-    <tr>
+    <tr contenteditable="false">
         <td>2</td>
-        <td>2020-05-28 at 11:03:36 CST INFO com.log.PrintMain 25 main - log4j2日志输出：This is info message.This is info
+        <td id="file-2">2020-05-28 at 11:03:36 CST INFO com.log.PrintMain 25 main - log4j2日志输出：This is info message.This
+            is info
+            message.This is info message.This is info message.This is info message.This is info message.This is info
+            message.This is info message.This is info message.
+        </td>
+    </tr>
+    <tr contenteditable="false">
+        <td>2</td>
+        <td id="file-3">2020-05-28 at 11:03:36 CST INFO com.log.PrintMain 25 main - log4j2日志输出：This is info message.This
+            is info
+            message.This is info message.This is info message.This is info message.This is info message.This is info
+            message.This is info message.This is info message.
+        </td>
+    </tr>
+    <tr contenteditable="false">
+        <td>3</td>
+        <td id="file-4">2020-05-28 at 11:03:36 CST INFO com.log.PrintMain 25 main - log4j2日志输出：This is info message.This
+            is info
+            message.This is info message.This is info message.This is info message.This is info message.This is info
+            message.This is info message.This is info message.
+        </td>
+    </tr>
+    <tr contenteditable="false">
+        <td>4</td>
+        <td id="file-5">2020-05-28 at 11:03:36 CST INFO com.log.PrintMain 25 main - log4j2日志输出：This is info message.This
+            is info
             message.This is info message.This is info message.This is info message.This is info message.This is info
             message.This is info message.This is info message.
         </td>
     </tr>
 </table>
-<script src=".\\jquery.min.js" type="text/javascript">
+<script>
+    let current_td = undefined;
+    let current_tr_id = undefined;
+    let click_btn = 0;
 
-</script>
-<script src=".\\jquery.min.js" type="text/javascript">
-    console.log('this')
-    $(document).ready(function () {
-        $("td").click(function () {
-            let range = document.createRange();
-            console.log(this)
-            let elem_tr = this.parentElement;
-            console.log(elem_tr)
-
-            let selection = window.getSelection();
-            selection.removeAllRanges();
-            // let last_elem = selection.getRangeAt(0);
-            // $(last_elem).attr('class', '')
-
-            // $(elem_tr).attr('class', 'selected');
-            range.selectNodeContents(elem_tr)
-            range.selectNodeContents(this)
-            selection.addRange(range);
-        })
+    window.addEventListener('mousedown', function (e) {
+        click_btn = e.button;
+        if (click_btn === 2 && checkSelectionIsEmpty() === true) { // 只处理右键点击事件
+            let elem_list = document.elementsFromPoint(e.clientX, e.clientY);
+            console.log(e)
+            // console.log(e.target)
+            // console.log(typeof elem_list)
+            current_td = elem_list[0];
+            current_tr_id = current_td.getAttribute("id")
+            // console.log(current_td)
+            // console.log("id: " +current_tr_id)
+        }
     })
+
+    document.onselectionchange = function () {
+        let selection = document.getSelection();
+        //typeof selected_text == 'undefined' || selected_text == null || selected_text == ""
+        console.log("id-selected: " + current_tr_id)
+        console.log('range cnt: ' + selection.rangeCount)
+        let is_select_all = false;
+        let rangeCnt = selection.rangeCount;
+        if (rangeCnt !== 0) {
+            let selected_text = selection.getRangeAt(0).toString();
+            console.log("text: " + selected_text)
+            if (typeof selected_text == 'undefined' || selected_text == null || selected_text === "") {
+                is_select_all = true;
+            } else {
+                return;
+            }
+        }
+
+        if (is_select_all && click_btn === 2 && current_tr_id !== undefined) {
+            selection.removeAllRanges();
+            let elem_tr = document.getElementById(current_tr_id).parentNode;
+            console.log(elem_tr)
+            console.log('elem_tr: ' + elem_tr)
+            // 清空选项
+            let range = new Range();
+            range.setStart(elem_tr, 0)
+            range.setEnd(elem_tr, 4)
+            selection.addRange(range);
+        }
+        current_tr_id = undefined;
+        click_btn = 0;
+    }
+
+    let checkSelectionIsEmpty = function () {
+        let selection = document.getSelection();
+        let rangeCnt = selection.rangeCount;
+        if (rangeCnt === 0) {
+            return true;
+        }
+        if (rangeCnt !== 0) {
+            let selected_text = selection.getRangeAt(0).toString();
+            if (typeof selected_text == 'undefined' || selected_text == null || selected_text === "") {
+                selection.removeAllRanges();
+                return true;
+            }
+        }
+        return false;
+    }
+
+
 </script>
 </body>
 </html>
